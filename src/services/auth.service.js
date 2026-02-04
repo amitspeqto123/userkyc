@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
 import { User } from "../models/user.model.js";
+import jwt from "jsonwebtoken";
 
 export const signupService = async ({ email, password }) => {
   const existingUser = await User.findOne({ email });
@@ -19,8 +20,8 @@ export const loginService = async ({ email, password }) => {
 
   if (!user) throw new Error("Invalid email or password");
 
-  if (!user.emailVerified)
-    throw new Error("Please verify your email before logging in");
+  // if (!user.emailVerified)
+  //   throw new Error("Please verify your email before logging in");
 
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) throw new Error("Invalid email or password");
@@ -30,4 +31,43 @@ export const loginService = async ({ email, password }) => {
   });
 
   return { user, token };
+};
+
+export const handleSocialLogin = async (profile) => {
+  // profile = { email, provider, id }
+  let user = await User.findOne({ email: profile.email });
+
+  if (user) {
+    // User exists, check provider
+    if (user.provider !== profile.provider.toUpperCase()) {
+      // Update provider and providerId
+      user.provider = profile.provider.toUpperCase();
+      user.providerId = profile.id;
+      await user.save();
+    }
+  } else {
+    // New user
+    user = await User.create({
+      email: profile.email,
+      provider: profile.provider.toUpperCase(),
+      providerId: profile.id,
+      emailVerified: true, // social login trusted
+    });
+  }
+
+  // Generate JWT
+  const token = jwt.sign(
+    {
+      id: user._id,
+      email: user.email,
+      provider: user.provider,
+    },
+    process.env.JWT_SECRET,
+    { expiresIn: "1h" },
+  );
+
+  return {
+    token,
+    user,
+  };
 };

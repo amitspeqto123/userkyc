@@ -1,4 +1,4 @@
-import { loginService, signupService } from "../services/auth.service.js";
+import { handleSocialLogin, loginService, signupService } from "../services/auth.service.js";
 
 export const signupController = async (req, res, next) => {
   try {
@@ -32,4 +32,11 @@ export const loginController = async (req, res, next) => {
   } catch (err) {
     next(err);
   }
+};
+export const socialCallback = async (req, res) => {
+  const data = await handleSocialLogin(req.user);
+  res.json({
+    message: `${req.user.provider} Login Successfully..`,
+    ...data,
+  });
 };
