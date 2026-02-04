@@ -25,11 +25,11 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    status: {
-      type: String,
-      enum: ["PENDING", "ACTIVE", "BLOCKED"],
-      default: "PENDING",
-    },
+    // status: {
+    //   type: String,
+    //   enum: ["PENDING", "ACTIVE", "BLOCKED"],
+    //   default: "PENDING",
+    // },
     provider: {
       type: String,
       enum: ["LOCAL", "GOOGLE", "GITHUB"],
