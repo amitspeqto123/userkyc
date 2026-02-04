@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import { User } from "../models/user.model.js";
 import jwt from "jsonwebtoken";
+import { sendMailgunEmail } from "../utils/mailgun.js";
 
 export const signupService = async ({ email, password }) => {
   const existingUser = await User.findOne({ email });
@@ -20,15 +21,19 @@ export const loginService = async ({ email, password }) => {
 
   if (!user) throw new Error("Invalid email or password");
 
-  // if (!user.emailVerified)
-  //   throw new Error("Please verify your email before logging in");
+  if (!user.emailVerified)
+    throw new Error("Please verify your email before logging in");
 
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) throw new Error("Invalid email or password");
 
-  const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN || "7d",
-  });
+  const token = jwt.sign(
+    { id: user._id, role: user.role },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: process.env.JWT_EXPIRES_IN || "7d",
+    },
+  );
 
   return { user, token };
 };
@@ -65,7 +70,16 @@ export const handleSocialLogin = async (profile) => {
     process.env.JWT_SECRET,
     { expiresIn: "1h" },
   );
-
+  // **Welcome mail if first login**
+  if (!user.emailVerified) {
+    await sendMailgunEmail({
+      to: user.email,
+      subject: "Welcome to MyApp!",
+      html: `<p>Hi, welcome to MyApp! Your account is ready to use.</p>`,
+    });
+    user.emailVerified = true; // Optional: auto-verify social login emails
+    await user.save();
+  }
   return {
     token,
     user,

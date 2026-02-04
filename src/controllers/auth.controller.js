@@ -1,4 +1,5 @@
 import { handleSocialLogin, loginService, signupService } from "../services/auth.service.js";
+import { sendVerificationEmail } from "../services/emailVerification.service.js";
 
 export const signupController = async (req, res, next) => {
   try {
@@ -11,6 +12,7 @@ export const signupController = async (req, res, next) => {
         email: user.email,
       },
     });
+    await sendVerificationEmail(user)
   } catch (err) {
     next(err);
   }

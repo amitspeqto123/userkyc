@@ -20,7 +20,10 @@ app.use(passport.initialize());
 import "./config/passport.js";
 
 import authRoute from "./routes/auth.route.js";
+import emailVerificationRoute from "./routes/emailVerification.route.js";
 // Routes
 app.use("/auth", authRoute);
+app.use("/auth/email-verification", emailVerificationRoute);
+
 
 export default app;
