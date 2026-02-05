@@ -22,10 +22,12 @@ import "./config/passport.js";
 import authRoute from "./routes/auth.route.js";
 import emailVerificationRoute from "./routes/emailVerification.route.js";
 import profileRoute from "./routes/profile.route.js";
+import kycRoute from "./routes/kyc.route.js";
 // Routes
 app.use("/auth", authRoute);
 app.use("/auth/email-verification", emailVerificationRoute);
 app.use("/profile", profileRoute);
+app.use("/kyc", kycRoute);
 
 
 export default app;
